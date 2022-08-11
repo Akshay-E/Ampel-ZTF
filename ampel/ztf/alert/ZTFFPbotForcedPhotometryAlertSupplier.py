@@ -154,8 +154,10 @@ def get_fpbot_baseline(
             df.query("fieldid + filterid != @added", inplace=True)
     df = df.reset_index(drop=True)
 
-    df["zp_median_deviation"] = df.magzp - df.zpmed
-    df.query("abs(zp_median_deviation) < @zp_max_deviation_from_median", inplace=True)
+    # Cut datapoints for which magzp deviates too much from median magzp
+    median_zp = np.median(df.magzp)
+    df["zp_median_deviation"] = np.abs(np.log10(median_zp / df.magzp))
+    df.query("zp_median_deviation < @zp_max_deviation_from_median", inplace=True)
 
     unique_fid = np.unique(df.fcqfid.values).astype(int)
 
